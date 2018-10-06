@@ -4,6 +4,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import javax.management.InvalidAttributeValueException;
+import java.util.ArrayList;
 
 public class GameTests {
 
@@ -23,7 +24,7 @@ public class GameTests {
 
         int numberOfPlayers = 1;
         PrepareGame gamePreparer = new PrepareGame();
-        Deck mainDeck = new Deck();
+        Deck mainDeck = new Deck("");
 
         try {
             Deck[] playerCards = gamePreparer.splitDeck(mainDeck, numberOfPlayers);
@@ -37,11 +38,11 @@ public class GameTests {
     @Test
     void determineTiedPlayersTest(){
         int numberOfPlayers = 2;
-        Card[] sampleCards = new Card[numberOfPlayers];
+        ArrayList<Card> sampleCards = new ArrayList<>();
         GameController gControl = new GameController();
 
-        sampleCards[0] = new Card(1, Suit.HEARTS);
-        sampleCards[1] = new Card(1, Suit.DIAMONDS);
+        sampleCards.add(new Card(1, Suit.HEARTS));
+        sampleCards.add(new Card(1, Suit.DIAMONDS));
 
         int[] realOutput = new int[]{0, 1};
         int[] output = gControl.determineTiedPlayers(sampleCards, numberOfPlayers);

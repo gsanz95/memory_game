@@ -15,7 +15,7 @@ class PrepareGame {
      * @return Deck New deck containing 52 card objects
      */
     Deck makeDeck() {
-        Deck cardDeck = new Deck();
+        Deck cardDeck = new Deck("");
 
         for(Suit cardSuit : Suit.values()){
             for(int i = 1; i <= 13; i++){
@@ -46,9 +46,10 @@ class PrepareGame {
         ArrayList<Card> mainDeck = deckToSplit.getCards();
 
         Deck[] playerDecks = new Deck[numberOfPlayers];
+        String[] playerNames = new String[]{"Hans", "Gretel", "Witch"};
 
         for (int i = 0; i < numberOfPlayers; i++){
-            playerDecks[i] = new Deck();
+            playerDecks[i] = new Deck(playerNames[i]);
 
             // Adding cards to their respective deck
             for(int j = 0; j < playerDeckSize; j++){

@@ -6,19 +6,25 @@ import java.util.ArrayList;
  *  Deck class contains a group of card classes
  */
 class Deck {
+    String ownerName;
     ArrayList<Card> cards;
 
     /**
      * Constructor
      */
-    public Deck() {
+    public Deck(String ownerName) {
         this.cards = new ArrayList<Card>();
+        this.ownerName = ownerName;
     }
 
     // Accessors
 
     public ArrayList<Card> getCards(){
         return this.cards;
+    }
+
+    public String getOwnerName() {
+        return ownerName;
     }
 
     /**
@@ -45,7 +51,7 @@ class Deck {
      * @return The card removed from cards
      */
     Card popCard(){
-        return this.cards.remove(1);
+        return this.cards.remove(0);
     }
 
     /**

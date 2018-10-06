@@ -4,8 +4,6 @@ import java.util.ArrayList;
 
 class GameLogger {
 
-    private static String[] playerNames = {"Hans", "Gretel"};
-
     /**
      * Prints all the cards inside of the deck passed.
      *
@@ -22,22 +20,27 @@ class GameLogger {
         System.out.println("Total Cards: " + cardCount);
     }
 
-    void printCardsPlayed(int[] playerPositions, Card[] cardsPlayed){
-        for(int i = 0; i < cardsPlayed.length; i++){
-            System.out.println(playerNames[playerPositions[i]] + " plays " + cardsPlayed[playerPositions[i]].toString() + " as up card");
+    void printGameStart(String gameMode){
+        System.out.println();
+        System.out.println("Starting: " + gameMode);
+    }
+
+    void printCardsPlayed(Deck[] tiedDecks, ArrayList<Card> cardsPlayed){
+        for(int i = 0; i < tiedDecks.length; i++){
+            System.out.println(tiedDecks[i].getOwnerName() + " plays " + cardsPlayed.get(i).toString() + " as up card");
         }
     }
 
-    void printRoundWinner(int winnerPosition){
-        System.out.println(playerNames[winnerPosition] + " wins the round.");
+    void printRoundWinner(Deck winnerDeck){
+        System.out.println(winnerDeck.getOwnerName() + " wins the round.");
     }
 
     void printWar(){
         System.out.println("War!");
     }
 
-    void printGameWinner(int winnerPosition){
-        System.out.println(playerNames[winnerPosition] + " wins!");
+    void printGameWinner(Deck winnerDeck){
+        System.out.println(winnerDeck.getOwnerName() + " wins!");
     }
 
     void printGameTie() { System.out.println("Tied Game!");}

@@ -1,9 +1,11 @@
 package com.company;
 
+import java.util.ArrayList;
+
 class UnlimitedWar {
 
-    static int MAX_TIED_PLAYERS = 2;
-    private static int numberOfPlayers = 2;
+    private static int MAX_TIED_PLAYERS = 2;
+    private int numberOfPlayers;
     private static GameLogger logger = new GameLogger();
     private static GameController gameControl = new GameController();
     private static PrepareGame gamePreparer = new PrepareGame();
@@ -14,8 +16,9 @@ class UnlimitedWar {
      *
      * @param maxRounds The number of max rounds
      */
-    public UnlimitedWar(int maxRounds){
+    public UnlimitedWar(int maxRounds, int numberOfPlayers){
         this.roundLimit = maxRounds;
+        this.numberOfPlayers = numberOfPlayers;
     }
 
     /**
@@ -36,76 +39,101 @@ class UnlimitedWar {
             return null;
         }
 
-        int roundWinner;
         for(int i = 0; i < this.roundLimit; i++){
-            roundWinner = playRound(playerDecks);
-            logger.printRoundWinner(roundWinner - 1);
+            tryPlayRound(playerDecks);
+
+            if(isAnyDeckEmpty(playerDecks)) break;
         }
 
         return playerDecks;
     }
 
+    private void tryPlayRound(Deck[] playerDecks)throws EmptyDeckException{
+        try{
+            playRound(playerDecks);
+        }catch (EmptyDeckException e){
+            System.err.println(e.getMessage());
+        }
+    }
+
     /**
-     * Plays a round by getting a card from each player and finiding the winner.
-     * If a war is started, the MAX_TIED_PLAYERS are determined.
-     * Once tiedPlayers have been located they get more cards taken out of their
-     * decks and compared until a winner is found.
+     * Plays a round by getting a card from each player and finding the winner.
+     * If a war is started, playWarRound is called to determine the winner.
      *
-     * @param playerDecks
-     * @return
+     * @param playerDecks Decks for each player
+     * @return Position of the winner
      */
-    private int playRound(Deck[] playerDecks) {
-        Card[] cardsPlayed = gameControl.popPlayerCards(playerDecks, numberOfPlayers);
+    private void playRound(Deck[] playerDecks) throws EmptyDeckException {
+        ArrayList<Card> cardsPlayed = gameControl.popPlayerCards(playerDecks, numberOfPlayers);
 
-        int[] playerPositions = getPlayerPositions(cardsPlayed);
+        logger.printCardsPlayed(playerDecks, cardsPlayed);
 
-        logger.printCardsPlayed(playerPositions, cardsPlayed);
-
-        int roundWinner = gameControl.determineRoundWinner(cardsPlayed);
+        Deck roundWinner = gameControl.determineRoundWinner(playerDecks, cardsPlayed);
 
         // Has a War been started?
-        while (roundWinner == -1) {
+        if(roundWinner == null){
+            try{
+                 roundWinner = playWarRound(playerDecks, cardsPlayed);
+            }catch (EmptyDeckException e){
+                throw new EmptyDeckException(e.getMessage());
+            }
+        }
+
+        addCardsToWinner(roundWinner, cardsPlayed);
+        logger.printRoundWinner(roundWinner);
+    }
+
+
+    /**
+     * Plays extra rounds of war until a winner has been decided.
+     *
+     *
+     * @param playerDecks Decks for all the players
+     * @param cardsPlayed previously played cards in the round the function is called
+     * @return The position of the actual winner of the round
+     */
+    private Deck playWarRound(Deck[] playerDecks, ArrayList<Card> cardsPlayed) throws EmptyDeckException{
+        if(isAnyDeckEmpty(playerDecks)) {
+            throw new EmptyDeckException("War stopped: Empty Deck");
+        }
+
+        Deck roundWinner = null;
+        Deck[] tiedDecks = new Deck[MAX_TIED_PLAYERS];
+
+        while (roundWinner == null) {
             logger.printWar();
             int[] tiedPlayers = gameControl.determineTiedPlayers(cardsPlayed, MAX_TIED_PLAYERS);
-            Deck[] tiedDecks = new Deck[MAX_TIED_PLAYERS];
 
             for (int i = 0; i < MAX_TIED_PLAYERS; i++)
                 tiedDecks[i] = playerDecks[tiedPlayers[i]];
 
-            cardsPlayed = gameControl.popPlayerCards(tiedDecks, MAX_TIED_PLAYERS);
-            logger.printCardsPlayed(tiedPlayers, cardsPlayed);
-            roundWinner = gameControl.determineRoundWinner(cardsPlayed);
+
+            ArrayList<Card> warCards = gameControl.popPlayerCards(tiedDecks, MAX_TIED_PLAYERS);
+            logger.printCardsPlayed(tiedDecks, warCards);
+
+            roundWinner = gameControl.determineRoundWinner(tiedDecks, warCards);
+            cardsPlayed.addAll(warCards);
         }
-
-        addCardsToWinner(playerDecks, cardsPlayed, roundWinner);
-
         return roundWinner;
-    }
-
-    /**
-     * Groups the position of each player and the players card.
-     *
-     * @param cardsPlayed Cards played this round
-     * @return Position of a player's card in the cardsPlayed group.
-     */
-     private int[] getPlayerPositions(Card[] cardsPlayed){
-        int[] playerPositions = new int[cardsPlayed.length];
-        for(int i = 0; i < playerPositions.length; i++)
-            playerPositions[i] = i;
-
-        return playerPositions;
     }
 
     /**
      * Takes all the cards in the cards played pile and adds the to the winner's deck
      *
-     * @param playerDecks Grouped decks containing the winner deck
+     * @param winnerDeck Deck where the cards will be added into
      * @param cardsPlayed All cards to be put into the winning deck
-     * @param roundWinner The location of the winner's deck inside playerDecks
      */
-     private void addCardsToWinner(Deck[] playerDecks, Card[] cardsPlayed, int roundWinner){
+     private void addCardsToWinner(Deck winnerDeck, ArrayList<Card> cardsPlayed){
         for(Card singleCard : cardsPlayed){
-            playerDecks[roundWinner - 1].addCard(singleCard);
+            winnerDeck.addCard(singleCard);
         }
+    }
+
+    private boolean isAnyDeckEmpty(Deck[] decksToCheck){
+         for(Deck singleDeck: decksToCheck){
+             if(singleDeck.isEmpty()) return true;
+         }
+
+         return false;
     }
 }

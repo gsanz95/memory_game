@@ -1,51 +1,52 @@
 package com.company;
 
-import java.util.EmptyStackException;
+import java.util.ArrayList;
 import java.util.HashMap;
 
 public class GameController {
 
-    static Card[] popPlayerCards(Deck[] playerDecks, int numberOfPlayers) throws EmptyStackException{
-        Card[] cardsPlayed = new Card[numberOfPlayers];
+    static ArrayList<Card> popPlayerCards(Deck[] playerDecks, int numberOfPlayers) {
+        ArrayList<Card> cardsPlayed = new ArrayList<>();
 
         // Pop a card for each player
         for(int i = 0; i < numberOfPlayers; i++){
-            cardsPlayed[i] = playerDecks[i].popCard();
+            cardsPlayed.add(playerDecks[i].popCard());
         }
 
         return cardsPlayed;
     }
 
-    int determineRoundWinner(Card[] cardsPlayed) {
-        int roundWinner = -2;
-        int numberOfPlayers = cardsPlayed.length;
+    Deck determineRoundWinner(Deck[] decks, ArrayList<Card> cardsPlayed) {
+        int highestValue = cardsPlayed.get(0).getRank();
+        int numberOfPlayers = cardsPlayed.size();
+        Deck roundWinner = decks[0];
 
         for(int i = 1; i < numberOfPlayers; i++){
-            int compareResult = cardsPlayed[i-1].compareTo(cardsPlayed[i]);
+            int rankToCompare = cardsPlayed.get(i).getRank();
 
-            if(compareResult < 0){
-                roundWinner = i + 1;
-            }else if(compareResult > 0){
-                roundWinner = i;
-            }else{
-                return -1;
+            if(highestValue < rankToCompare){
+                highestValue = rankToCompare;
+                roundWinner = decks[i];
+            }else if(highestValue == rankToCompare){
+                return null;
             }
         }
         return roundWinner;
     }
 
-    int[] determineTiedPlayers(Card[] cardsPlayed, int maxPlayersAllowed){
+    int[] determineTiedPlayers(ArrayList<Card> cardsPlayed, int maxPlayersAllowed){
         int[] tiedPlayers = new int[maxPlayersAllowed];
 
         HashMap<Card, Integer> cardLocation = new HashMap<Card, Integer>();
 
-        for(int i = 0; i < maxPlayersAllowed; i++) {
-            if(cardLocation.containsKey(cardsPlayed[i])){
-                tiedPlayers[0] = cardLocation.get(cardsPlayed[i]);
+        for(int i = 0; i < cardsPlayed.size(); i++) {
+            if(cardLocation.containsKey(cardsPlayed.get(i))){
+                tiedPlayers[0] = cardLocation.get(cardsPlayed.get(i));
                 tiedPlayers[1] = i;
+                break;
             }
 
-            cardLocation.put(cardsPlayed[i], i);
+            cardLocation.put(cardsPlayed.get(i), i);
         }
 
         return tiedPlayers;
